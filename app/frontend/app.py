@@ -47,7 +47,7 @@ if option == "📷 Face Detection":
             }
 
             response = requests.post(
-                "http://127.0.0.1:8000/vision/detect-face",
+                "https://smart-retail-ai-qceq.onrender.com/vision/detect-face",
                 files=files
             )
 
@@ -93,7 +93,7 @@ elif option == "😊 Review Sentiment":
         else:
 
             response = requests.post(
-                "http://127.0.0.1:8000/nlp/sentiment",
+                "https://smart-retail-ai-qceq.onrender.com/nlp/sentiment",
                 json={"text": review}
             )
 
@@ -144,7 +144,7 @@ elif option == "🤖 AI Shopping Assistant":
             with st.spinner("Thinking..."):
 
                 response = requests.post(
-                    "http://127.0.0.1:8000/chatbot/chat",
+                    "https://smart-retail-ai-qceq.onrender.com/chatbot/chat",
                     json={
                         "question": question
                     }
@@ -165,3 +165,4 @@ elif option == "🤖 AI Shopping Assistant":
 
                 st.error("API Error")
                 st.write(response.text)
+                
