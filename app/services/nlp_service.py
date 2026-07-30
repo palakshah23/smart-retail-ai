@@ -1,21 +1,23 @@
-from transformers import pipeline
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-sentiment_pipeline = None
+analyzer = SentimentIntensityAnalyzer()
 
 
 def analyze_sentiment(review: str):
-    global sentiment_pipeline
 
-    if sentiment_pipeline is None:
-        sentiment_pipeline = pipeline(
-            "sentiment-analysis",
-            model="distilbert-base-uncased-finetuned-sst-2-english"
-        )
+    scores = analyzer.polarity_scores(review)
 
-    result = sentiment_pipeline(review)[0]
+    compound = scores["compound"]
+
+    if compound >= 0:
+        sentiment = "POSITIVE"
+    else:
+        sentiment = "NEGATIVE"
+
+    confidence = abs(compound)
 
     return {
         "review": review,
-        "sentiment": result["label"],
-        "confidence": round(result["score"], 4)
+        "sentiment": sentiment,
+        "confidence": round(confidence, 4)
     }
