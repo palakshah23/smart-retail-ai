@@ -34,7 +34,11 @@ if option == "📷 Face Detection":
 
     if uploaded_file is not None:
 
-        st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
+        st.image(
+    uploaded_file,
+    caption="Uploaded Image",
+    width="stretch"
+)
 
         if st.button("Detect Face"):
 
