@@ -1,36 +1,11 @@
 import os
-import traceback
-from dotenv import load_dotenv
-from groq import Groq
-
-load_dotenv()
 
 def ask_chatbot(question: str):
-    try:
-        api_key = os.getenv("GROQ_API_KEY")
-        print("API KEY FOUND:", api_key is not None)
+    api_key = os.getenv("GROQ_API_KEY")
 
-        client = Groq(api_key=api_key)
-
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful AI shopping assistant."
-                },
-                {
-                    "role": "user",
-                    "content": question
-                }
-            ]
-        )
-
-        return {
-            "question": question,
-            "answer": response.choices[0].message.content
-        }
-
-    except Exception as e:
-        traceback.print_exc()
-        raise
+    return {
+        "question": question,
+        "api_key_exists": api_key is not None,
+        "api_key_length": len(api_key) if api_key else 0,
+        "api_key_prefix": api_key[:8] if api_key else "NOT FOUND"
+    }
