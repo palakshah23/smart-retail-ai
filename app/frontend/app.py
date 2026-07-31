@@ -97,9 +97,15 @@ elif option == "😊 Review Sentiment":
         else:
 
             response = requests.post(
-                "https://smart-retail-ai-tmm5.onrender.com/nlp/sentiment",
-                json={"text": review}
-            )
+    "https://smart-retail-ai-tmm5.onrender.com/nlp/sentiment",
+    json={"text": review}
+)
+
+st.write("Status Code:", response.status_code)
+st.write("Final URL:", response.url)
+st.write("Headers:", dict(response.headers))
+st.write("Response:", response.text)
+st.write("History:", response.history) 
 
             if response.status_code == 200:
 
