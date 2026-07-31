@@ -1,35 +1,36 @@
 import os
+import traceback
 from dotenv import load_dotenv
 from groq import Groq
 
-# Load .env only once
 load_dotenv()
 
-
 def ask_chatbot(question: str):
-    # Create the client only when this function is called
-    client = Groq(
-        api_key=os.getenv("GROQ_API_KEY")
-    )
+    try:
+        api_key = os.getenv("GROQ_API_KEY")
+        print("API KEY FOUND:", api_key is not None)
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are a helpful AI assistant for a smart retail store. "
-                    "Answer customer shopping questions politely and briefly."
-                )
-            },
-            {
-                "role": "user",
-                "content": question
-            }
-        ]
-    )
+        client = Groq(api_key=api_key)
 
-    return {
-        "question": question,
-        "answer": response.choices[0].message.content
-    }
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a helpful AI shopping assistant."
+                },
+                {
+                    "role": "user",
+                    "content": question
+                }
+            ]
+        )
+
+        return {
+            "question": question,
+            "answer": response.choices[0].message.content
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise
