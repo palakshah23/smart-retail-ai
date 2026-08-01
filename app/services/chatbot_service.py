@@ -1,10 +1,17 @@
 import os
+import traceback
+
+import httpx
 from groq import Groq
 
-def ask_chatbot(question: str):
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+def ask_chatbot(question: str):
     try:
+        client = Groq(
+            api_key=os.getenv("GROQ_API_KEY"),
+            http_client=httpx.Client(timeout=60)
+        )
+
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
@@ -22,5 +29,6 @@ def ask_chatbot(question: str):
     except Exception as e:
         return {
             "error_type": type(e).__name__,
-            "error": str(e)
+            "error": str(e),
+            "traceback": traceback.format_exc()
         }
