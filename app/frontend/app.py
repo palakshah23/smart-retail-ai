@@ -1,14 +1,26 @@
 import streamlit as st
 import requests
 
+# -----------------------------
+# Configuration
+# -----------------------------
 st.set_page_config(
     page_title="Smart Retail AI",
     page_icon="🛒",
     layout="wide"
 )
 
-st.title("🛒 Smart Retail AI Assistant")
+API_URL = "https://smart-retail-ai-tmm5.onrender.com"
 
+# -----------------------------
+# Title
+# -----------------------------
+st.title("🛒 Smart Retail AI Assistant")
+st.markdown("An AI-powered Retail Assistant using Computer Vision, NLP and Generative AI.")
+
+# -----------------------------
+# Sidebar
+# -----------------------------
 st.sidebar.title("Features")
 
 option = st.sidebar.selectbox(
@@ -20,15 +32,16 @@ option = st.sidebar.selectbox(
     ]
 )
 
-# ---------------------------------------------------
+# =====================================================
 # FACE DETECTION
-# ---------------------------------------------------
+# =====================================================
+
 if option == "📷 Face Detection":
 
     st.header("📷 Face Detection")
 
     uploaded_file = st.file_uploader(
-        "Upload an image",
+        "Upload an Image",
         type=["jpg", "jpeg", "png"]
     )
 
@@ -37,59 +50,71 @@ if option == "📷 Face Detection":
         st.image(
             uploaded_file,
             caption="Uploaded Image",
-            width="stretch"
+            use_container_width=True
         )
 
         if st.button("Detect Face"):
 
-            files = {
-                "file": (
-                    uploaded_file.name,
-                    uploaded_file,
-                    uploaded_file.type
-                )
-            }
+            with st.spinner("Detecting faces..."):
 
-            response = requests.post(
-                "https://smart-retail-ai-tmm5.onrender.com/vision/detect-face",
-                files=files
-            )
+                files = {
+                    "file": (
+                        uploaded_file.name,
+                        uploaded_file,
+                        uploaded_file.type
+                    )
+                }
 
-            # Debug
-            st.write("Status Code:", response.status_code)
-            st.write("Final URL:", response.url)
-            st.write("Headers:", dict(response.headers))
-            st.write("Response:", response.text)
-            st.write("History:", response.history)
+                try:
 
-            if response.status_code == 200:
+                    response = requests.post(
+                        f"{API_URL}/vision/detect-face",
+                        files=files,
+                        timeout=60
+                    )
 
-                result = response.json()
+                    if response.status_code == 200:
 
-                st.success("✅ Detection Successful")
+                        result = response.json()
 
-                st.metric("Faces Detected", result["faces_detected"])
+                        st.success("✅ Face Detection Successful")
 
-                if result["faces_detected"] > 0:
-                    st.write("### Face Coordinates")
+                        st.metric(
+                            "Faces Detected",
+                            result["faces_detected"]
+                        )
 
-                    for idx, face in enumerate(result["faces"], start=1):
-                        st.write(f"**Face {idx}**")
-                        st.write(f"- X: {face['x']}")
-                        st.write(f"- Y: {face['y']}")
-                        st.write(f"- Width: {face['width']}")
-                        st.write(f"- Height: {face['height']}")
+                        if result["faces_detected"] > 0:
 
-            else:
-                st.error("API Error")
-                st.write(response.text)
+                            st.subheader("Detected Faces")
 
-# ---------------------------------------------------
+                            for i, face in enumerate(result["faces"], start=1):
+
+                                st.write(f"### Face {i}")
+                                st.write(f"X : {face['x']}")
+                                st.write(f"Y : {face['y']}")
+                                st.write(f"Width : {face['width']}")
+                                st.write(f"Height : {face['height']}")
+
+                        else:
+                            st.info("No face detected in the image.")
+
+                    else:
+
+                        st.error(f"API Error ({response.status_code})")
+                        st.code(response.text)
+
+                except Exception as e:
+                    st.error(str(e))
+
+
+# =====================================================
 # SENTIMENT ANALYSIS
-# ---------------------------------------------------
+# =====================================================
+
 elif option == "😊 Review Sentiment":
 
-    st.header("😊 Review Sentiment Analysis")
+    st.header("😊 Customer Review Sentiment Analysis")
 
     review = st.text_area(
         "Enter Customer Review",
@@ -103,53 +128,59 @@ elif option == "😊 Review Sentiment":
 
         else:
 
-            response = requests.post(
-                "https://smart-retail-ai-tmm5.onrender.com/nlp/sentiment",
-                json={"text": review}
-            )
+            with st.spinner("Analyzing Review..."):
 
-            # Debug
-            st.write("Status Code:", response.status_code)
-            st.write("Final URL:", response.url)
-            st.write("Headers:", dict(response.headers))
-            st.write("Response:", response.text)
-            st.write("History:", response.history)
+                try:
 
-            if response.status_code == 200:
+                    response = requests.post(
+                        f"{API_URL}/nlp/sentiment",
+                        json={
+                            "text": review
+                        },
+                        timeout=60
+                    )
 
-                result = response.json()
+                    if response.status_code == 200:
 
-                st.success("✅ Analysis Complete")
+                        result = response.json()
 
-                st.write("### Results")
+                        st.success("✅ Analysis Complete")
 
-                st.write(f"**Review:** {result['review']}")
+                        st.subheader("Review")
+                        st.write(result["review"])
 
-                if result["sentiment"] == "POSITIVE":
-                    st.success("😊 Positive Review")
-                else:
-                    st.error("😞 Negative Review")
+                        st.subheader("Sentiment")
 
-                st.metric(
-                    "Confidence",
-                    f"{result['confidence']*100:.2f}%"
-                )
+                        if result["sentiment"] == "POSITIVE":
+                            st.success("😊 Positive")
+                        else:
+                            st.error("😞 Negative")
 
-            else:
+                        st.metric(
+                            "Confidence",
+                            f"{result['confidence']*100:.2f}%"
+                        )
 
-                st.error("API Error")
-                st.write(response.text)
+                    else:
 
-# ---------------------------------------------------
+                        st.error(f"API Error ({response.status_code})")
+                        st.code(response.text)
+
+                except Exception as e:
+                    st.error(str(e))
+
+
+# =====================================================
 # AI SHOPPING ASSISTANT
-# ---------------------------------------------------
+# =====================================================
+
 elif option == "🤖 AI Shopping Assistant":
 
     st.header("🤖 AI Shopping Assistant")
 
     question = st.text_area(
-        "Ask your shopping question",
-        placeholder="Example: Suggest a good gaming laptop under ₹70,000"
+        "Ask anything about products",
+        placeholder="Example: Suggest a gaming laptop under ₹70,000"
     )
 
     if st.button("Ask AI"):
@@ -161,33 +192,33 @@ elif option == "🤖 AI Shopping Assistant":
 
             with st.spinner("Thinking..."):
 
-                response = requests.post(
-                    "https://smart-retail-ai-tmm5.onrender.com/chatbot/chat",
-                    json={
-                        "question": question
-                    }
-                )
+                try:
 
-            # Debug
-            st.write("Status Code:", response.status_code)
-            st.write("Final URL:", response.url)
-            st.write("Headers:", dict(response.headers))
-            st.write("Response:", response.text)
-            st.write("History:", response.history)
+                    response = requests.post(
+                        f"{API_URL}/chatbot/chat",
+                        json={
+                            "question": question
+                        },
+                        timeout=60
+                    )
 
-            if response.status_code == 200:
+                    if response.status_code == 200:
 
-                result = response.json()
+                        result = response.json()
 
-                st.success("✅ AI Response")
+                        st.success("✅ Response Generated")
 
-                st.write("### 🙋 Your Question")
-                st.info(result["question"])
+                        st.subheader("🙋 Your Question")
+                        st.info(question)
 
-                st.write("### 🤖 AI Shopping Assistant")
-                st.success(result["answer"])
+                        st.subheader("🤖 AI Assistant")
 
-            else:
+                        st.markdown(result["answer"])
 
-                st.error("API Error")
-                st.write(response.text)
+                    else:
+
+                        st.error(f"API Error ({response.status_code})")
+                        st.code(response.text)
+
+                except Exception as e:
+                    st.error(str(e))
