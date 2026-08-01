@@ -7,8 +7,13 @@ from groq import Groq
 
 def ask_chatbot(question: str):
     try:
+        api_key = os.getenv("GROQ_API_KEY", "").strip()
+
+        # TEMPORARY DEBUG
+        print(repr(api_key))
+
         client = Groq(
-            api_key=os.getenv("GROQ_API_KEY"),
+            api_key=api_key,
             http_client=httpx.Client(timeout=60)
         )
 
